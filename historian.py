@@ -72,18 +72,34 @@ async def knight(ctx, name):
 
 
 @bot.command()
-async def glorify(ctx, name, glory, event):
+# async def glorify(ctx, name, glory, event):
+async def glorify(ctx, *argv):
+    # From user perspective, first name should be name, then amount of glory, and then the last element should be event name
+    # argv is used because users sometimes add extra characters they shouldn't
+
+    arg_list = []
+    for arg in argv:
+        arg_list += [arg]
+
+    name = arg_list[0]
+    glory = arg_list[1]
+    event = arg_list[-1]
+
     # Read in the JSON file as it currently exists
     with open('data/annals.json', "r") as json_file:
         data = json.load(json_file)
     
     # Check for knight name
+    knight_exists = False
     for knight in data['knights']:
         if knight['name'] == name:
             knight_exists = True
             knight['history'].append(event)
             knight['glory'].append(int(glory))
             await ctx.send("May the deeds of Sir " + name + " be celebrated for countless generations")
+
+    if not knight_exists:
+        await ctx.send("I could not find that name. Use !knight to add a new knight or check thine spelling")
     
     with open('data/annals.json', 'w') as json_file:
         json.dump(data, json_file)
