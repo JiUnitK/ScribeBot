@@ -27,7 +27,6 @@ async def on_ready():
             json.dump(data, json_file)
 
 
-# Command
 @bot.command()
 async def swoon(ctx):
     players = ["Sir Pant", "Sir Griffyth", "Sir Percival", "Sir Bylandt"]
@@ -44,8 +43,9 @@ async def swoon(ctx):
 
     await ctx.send(random_compliment.format(player=random_player))
 
+
 @bot.command()
-async def addknight(ctx, name):
+async def knight(ctx, name):
     # Read in the JSON file as it currently exists
     with open('data/annals.json', "r") as json_file:
         data = json.load(json_file)
@@ -54,17 +54,62 @@ async def addknight(ctx, name):
     already_exists = False
     for knight in data['knights']:
         if knight['name'] == name:
-            await ctx.send(name + " is already in the annals of history")
+            await ctx.send("Sir " + name + " is already in the annals of history")
             already_exists = True
     
     # Add the new knight
     if not already_exists:
         data['knights'].append({
             'name': name,
-            'history': []
+            'history': [],
+            'glory': [],
         })
+
         with open('data/annals.json', 'w') as json_file:
             json.dump(data, json_file)
+
+        await ctx.send("Thus marks the chapter of Sir " + name + " in the annals of history")
+
+
+@bot.command()
+async def glorify(ctx, name, glory, event):
+    # Read in the JSON file as it currently exists
+    with open('data/annals.json', "r") as json_file:
+        data = json.load(json_file)
+    
+    # Check for knight name
+    for knight in data['knights']:
+        if knight['name'] == name:
+            knight_exists = True
+            knight['history'].append(event)
+            knight['glory'].append(int(glory))
+            await ctx.send("May the deeds of Sir " + name + " be celebrated for countless generations")
+    
+    with open('data/annals.json', 'w') as json_file:
+        json.dump(data, json_file)
+    
+
+@bot.command()
+async def summarize(ctx, name):
+    # Read in the JSON file as it currently exists
+    with open('data/annals.json', "r") as json_file:
+        data = json.load(json_file)
+
+    # Search for knight
+    knight_exists = False
+    for knight in data['knights']:
+        if knight['name'] == name:
+            target_knight = knight
+            knight_exists = True
+    
+    if not knight_exists:
+        await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
+    else:
+        # Sum all glory
+        glory = 0
+        for x in target_knight['glory']:
+            glory += x
+        await ctx.send("Sir " + name + " is known to have accumulated " + str(glory) + " points of glory")
 
 # Run the bot
 bot.run(TOKEN)
