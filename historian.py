@@ -43,6 +43,16 @@ async def swoon(ctx):
 
     await ctx.send(random_compliment.format(player=random_player))
 
+@bot.command()
+async def insult(ctx, name):
+    random_shame = [
+        "Thou callest that a glory score Ser {player}? How pitiable!",
+        "Lo! Doth the earth quake? Or is Ser {player}'s mother taking a walk?",
+        "Speaking of Ser {player}, doth knowest what they say about those with low glory?"
+    ]
+    random_insult = random_shame[random.randint(0, len(random_shame) - 1)]
+    await ctx.send(random_insult.format(player=name))
+
 
 @bot.command()
 async def knight(ctx, name):
@@ -126,6 +136,38 @@ async def summarize(ctx, name):
         for x in target_knight['glory']:
             glory += x
         await ctx.send("Sir " + name + " is known to have accumulated " + str(glory) + " points of glory")
+
+@bot.command()
+async def skill(ctx, skill_name, difficulty, *argv):
+    bonus_list = []
+    for arg in argv:
+        bonus_list += [arg]
+
+    difficulty = int(difficulty)
+
+    bonus = 0
+    for x in bonus_list[0:]:
+        bonus += int(x)
+
+    difficulty += bonus
+
+    crit_range = [difficulty, difficulty]
+    if difficulty > 20:
+        crit_range[1] = 20
+        crit_range[0] = 20 - (difficulty - 20)
+
+    roll = random.randint(1, 20)
+    output_str = skill_name
+    if roll == 1:
+        output_str += " -> fumble\n   (rolled 1)"
+    elif roll >= crit_range[0] and roll <= crit_range[1]:
+        output_str += " -> CRIT!\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
+    elif roll < difficulty:
+        output_str += " -> success!\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
+    else:
+        output_str += " -> fail\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
+    
+    await ctx.send(output_str)
 
 # Run the bot
 bot.run(TOKEN)
