@@ -158,7 +158,7 @@ async def skill(ctx, skill_name, difficulty, *argv):
 
     roll = random.randint(1, 20)
     output_str = skill_name
-    if roll == 1:
+    if roll == 20 and difficulty < 20:
         output_str += " -> fumble\n   (rolled 1)"
     elif roll >= crit_range[0] and roll <= crit_range[1]:
         output_str += " -> CRIT!\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
@@ -168,6 +168,34 @@ async def skill(ctx, skill_name, difficulty, *argv):
         output_str += " -> fail\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
     
     await ctx.send(output_str)
+
+@bot.command()
+async def narrate(ctx, name):
+    # Read in the JSON file as it currently exists
+    with open('data/annals.json', "r") as json_file:
+        data = json.load(json_file)
+
+    # Search for knight
+    knight_exists = False
+    for knight in data['knights']:
+        if knight['name'] == name:
+            target_knight = knight
+            knight_exists = True
+    
+    if not knight_exists:
+        await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
+    else:
+        narration = "Hear ye! Hear ye! The legend of Sir " + name + "!\n"
+        narration += "---------------------------------------------------------------------\n"
+        glory = 0
+        for x in range(len(target_knight['glory'])):
+            narration += str(target_knight['glory'][x]) + " glory for " + target_knight['history'][x] + "\n"
+            glory += target_knight['glory'][x]
+
+        narration += "---------------------------------------------------------------------\n"
+        narration += str(glory) + " glory total!"
+
+        await ctx.send(narration)
 
 # Run the bot
 bot.run(TOKEN)
