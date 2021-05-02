@@ -95,7 +95,7 @@ async def knight(ctx, name):
         data['knights'][name] = {}
         utility.save(data)
         await ctx.send("Thus marks the chapter of Sir " + name + " in the annals of history")
-        
+
 
 @bot.command()
 async def glorify(ctx, *argv):
@@ -182,7 +182,7 @@ async def skill(ctx, skill_name, difficulty, *argv):
         crit_range[0] = 20 - (difficulty - 20)
 
     roll = random.randint(1, 20)
-    output_str = skill_name
+    output_str = ctx.author.display_name + " rolled " + skill_name
     if roll == 1:
         output_str += " -> fumble\n   (rolled 1)"
     elif roll >= crit_range[0] and roll <= crit_range[1]:
