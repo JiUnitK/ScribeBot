@@ -447,13 +447,13 @@ async def skill(ctx, skill_name, *argv):
         knight = data['knights'][name]
         
         if skill_name in knight['personality']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['personality'][skill_name], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['personality'][skill_name]['value'], *argv))
         elif skill_name in knight['passions']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['passions'][skill_name], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['passions'][skill_name]['value'], *argv))
         elif skill_name in knight['statistics']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['statistics'][skill_name], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['statistics'][skill_name]['value'], *argv))
         elif skill_name in knight['skills']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['skills'][skill_name], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['skills'][skill_name]['value'], *argv))
         else:
             await ctx.send("Sir " + name + " does not have that skill, trait, or passion")
     else:
