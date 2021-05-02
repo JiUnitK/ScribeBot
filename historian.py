@@ -38,7 +38,8 @@ personality_mirror = {
     "temperate": "indulgent",
     "indulgent": "temperate",
     "trusting": "suspicious",
-    "suspicious": "trusting"
+    "suspicious": "trusting",
+    "valorous": "cowardly"
 }
 
 statistics = [
