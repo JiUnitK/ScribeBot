@@ -61,13 +61,12 @@ async def insult(ctx, name):
 async def claim(ctx, name):
     data = utility.load()
 
-    knight = utility.find_knight(name, data)
-    if knight:
+    if name in data['knights']:
         if ctx.author.name in data['claims']:
             await ctx.send("Thou hath already claimed Sir " + data['claims'][ctx.author.name])
         else:
             data['claims'][ctx.author.name] = name
-            await ctx.send(ctx.author.name + " has claimed Ser " + knight['name'])
+            await ctx.send(ctx.author.name + " has claimed Ser " + name)
             utility.save(data)
     else:
         await ctx.send("I know not this Ser " + name)
@@ -116,11 +115,8 @@ async def glorify(ctx, *argv):
     if name in data['knights']:
         if not 'history' in data['knights'][name]:
             data['knights'][name]['history'] = []
-        if not 'glory' in data['knights'][name]:
-            data['knights'][name]['glory'] = []
 
-        data['knights'][name]['history'].append(event)
-        data['knights'][name]['glory'].append(int(glory))
+        data['knights'][name]['history'].append({'glory': int(glory), "reason":event})
         utility.save(data)
         await ctx.send("May the deeds of Sir " + name + " be celebrated for countless generations")
     else:
@@ -128,31 +124,64 @@ async def glorify(ctx, *argv):
     
 
 @bot.command()
-async def summarize(ctx, name):
+async def summarize(ctx, *argv):
+    # Parse the argument list
+    arg_list = []
+    for arg in argv:
+        arg_list += [arg]
+
     data = utility.load()
     
-    if name in data['knights']:
+    knight = {}
+    name = ""
+    if len(argv) > 0:
+        name = arg_list[0]
+        if name in data['knights']:
+            knight = data['knights'][name]
+    else:
+        if ctx.author.name in data['claims']:
+            name = data['claims'][ctx.author.name]
+            knight = data['knights'][name]
+
+    if knight:
         # Sum all glory
         glory = 0
-        for x in data['knights'][name]['glory']:
-            glory += x
+        for x in knight['history']:
+            glory += x['glory']
         await ctx.send("Sir " + name + " is known to have accumulated " + str(glory) + " points of glory")
     else:
         await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
 
 
+
 @bot.command()
-async def narrate(ctx, name):
+async def narrate(ctx, *argv):
+    # Parse the argument list
+    arg_list = []
+    for arg in argv:
+        arg_list += [arg]
+
     data = utility.load()
 
-    if name in data['knights']:
+    knight = {}
+    name = ""
+    if len(argv) > 0:
+        name = arg_list[0]
+        if name in data['knights']:
+            knight = data['knights'][name]
+    else:
+        if ctx.author.name in data['claims']:
+            name = data['claims'][ctx.author.name]
+            knight = data['knights'][name]
+
+    if knight:
         narration = "Hear ye! Hear ye! The legend of Sir " + name + "!\n"
         narration += "---------------------------------------------------------------------\n"
         glory = 0
         knight = data['knights'][name]
-        for x in range(len(knight['glory'])):
-            narration += str(knight['glory'][x]) + " glory for " + knight['history'][x] + "\n"
-            glory += knight['glory'][x]
+        for x in range(len(knight['history'])):
+            narration += str(x['glory']) + " glory for " + x["reason"] + "\n"
+            glory += x['glory']
 
         narration += "---------------------------------------------------------------------\n"
         narration += str(glory) + " glory total!"
