@@ -1,10 +1,11 @@
 import os
-
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 import random
 import json
+
+import utility
 
 # Load the bot token from the .env file in this directory
 load_dotenv()
@@ -56,37 +57,27 @@ async def insult(ctx, name):
 
 @bot.command()
 async def knight(ctx, name):
-    # Read in the JSON file as it currently exists
-    with open('data/annals.json', "r") as json_file:
-        data = json.load(json_file)
-
-    # Check for knight name
-    already_exists = False
-    for knight in data['knights']:
-        if knight['name'] == name:
-            await ctx.send("Sir " + name + " is already in the annals of history")
-            already_exists = True
-    
-    # Add the new knight
-    if not already_exists:
+    data = utility.load()
+    knight = utility.find_knight(name, data)
+    if knight:
         data['knights'].append({
             'name': name,
             'history': [],
             'glory': [],
         })
-
-        with open('data/annals.json', 'w') as json_file:
-            json.dump(data, json_file)
+        utility.save(data)
 
         await ctx.send("Thus marks the chapter of Sir " + name + " in the annals of history")
+    else:
+        await ctx.send("Sir " + name + " is already in the annals of history")
 
 
 @bot.command()
-# async def glorify(ctx, name, glory, event):
 async def glorify(ctx, *argv):
     # From user perspective, first name should be name, then amount of glory, and then the last element should be event name
     # argv is used because users sometimes add extra characters they shouldn't
 
+    # Parse the argument list
     arg_list = []
     for arg in argv:
         arg_list += [arg]
@@ -95,47 +86,33 @@ async def glorify(ctx, *argv):
     glory = arg_list[1]
     event = arg_list[-1]
 
-    # Read in the JSON file as it currently exists
-    with open('data/annals.json', "r") as json_file:
-        data = json.load(json_file)
+    data = utility.load()
     
     # Check for knight name
-    knight_exists = False
-    for knight in data['knights']:
-        if knight['name'] == name:
-            knight_exists = True
-            knight['history'].append(event)
-            knight['glory'].append(int(glory))
-            await ctx.send("May the deeds of Sir " + name + " be celebrated for countless generations")
-
-    if not knight_exists:
+    knight = utility.find_knight(name, data)
+    if knight:
+        knight['history'].append(event)
+        knight['glory'].append(int(glory))
+        utility.save(data)
+        await ctx.send("May the deeds of Sir " + name + " be celebrated for countless generations")
+    else:
         await ctx.send("I could not find that name. Use !knight to add a new knight or check thine spelling")
-    
-    with open('data/annals.json', 'w') as json_file:
-        json.dump(data, json_file)
     
 
 @bot.command()
 async def summarize(ctx, name):
-    # Read in the JSON file as it currently exists
-    with open('data/annals.json', "r") as json_file:
-        data = json.load(json_file)
-
-    # Search for knight
-    knight_exists = False
-    for knight in data['knights']:
-        if knight['name'] == name:
-            target_knight = knight
-            knight_exists = True
+    data = utility.load()
     
-    if not knight_exists:
-        await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
-    else:
+    knight = utility.find_knight(name, data)
+    if knight:
         # Sum all glory
         glory = 0
-        for x in target_knight['glory']:
+        for x in knight['glory']:
             glory += x
         await ctx.send("Sir " + name + " is known to have accumulated " + str(glory) + " points of glory")
+    else:
+        await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
+
 
 @bot.command()
 async def skill(ctx, skill_name, difficulty, *argv):
@@ -158,7 +135,7 @@ async def skill(ctx, skill_name, difficulty, *argv):
 
     roll = random.randint(1, 20)
     output_str = skill_name
-    if roll == 20 and difficulty < 20:
+    if roll == 1:
         output_str += " -> fumble\n   (rolled 1)"
     elif roll >= crit_range[0] and roll <= crit_range[1]:
         output_str += " -> CRIT!\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
@@ -171,31 +148,23 @@ async def skill(ctx, skill_name, difficulty, *argv):
 
 @bot.command()
 async def narrate(ctx, name):
-    # Read in the JSON file as it currently exists
-    with open('data/annals.json', "r") as json_file:
-        data = json.load(json_file)
+    data = utility.load()
 
-    # Search for knight
-    knight_exists = False
-    for knight in data['knights']:
-        if knight['name'] == name:
-            target_knight = knight
-            knight_exists = True
-    
-    if not knight_exists:
-        await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
-    else:
+    knight = utility.find_knight(name, data)
+    if knight:
         narration = "Hear ye! Hear ye! The legend of Sir " + name + "!\n"
         narration += "---------------------------------------------------------------------\n"
         glory = 0
-        for x in range(len(target_knight['glory'])):
-            narration += str(target_knight['glory'][x]) + " glory for " + target_knight['history'][x] + "\n"
-            glory += target_knight['glory'][x]
+        for x in range(len(knight['glory'])):
+            narration += str(knight['glory'][x]) + " glory for " + knight['history'][x] + "\n"
+            glory += knight['glory'][x]
 
         narration += "---------------------------------------------------------------------\n"
         narration += str(glory) + " glory total!"
 
         await ctx.send(narration)
+    else:
+        await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
 
 # Run the bot
 bot.run(TOKEN)
