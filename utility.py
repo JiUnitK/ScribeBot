@@ -32,8 +32,8 @@ def roll( skill_name, difficulty, *argv ):
 
     roll = random.randint(1, 20)
     output_str = " rolled " + skill_name
-    if roll == 1:
-        output_str += " -> fumble\n   (rolled 1)"
+    if roll == 20 and difficulty < 20:
+        output_str += " -> fumble\n   (rolled 20)"
     elif roll >= crit_range[0] and roll <= crit_range[1]:
         output_str += " -> CRIT!\n   (rolled " + str(roll) + ", DC " + str(difficulty) + ", " + "crit range: " + str(crit_range[0]) + " to " + str(crit_range[1]) + ")"
     elif roll < difficulty:
