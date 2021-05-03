@@ -252,8 +252,8 @@ async def narrate(ctx, *argv):
         glory = 0
         knight = data['knights'][name]
         for x in range(len(knight['history'])):
-            narration += str(x['glory']) + " glory for " + x["reason"] + "\n"
-            glory += x['glory']
+            narration += str(knight['history'][x]['glory']) + " glory for " + knight['history'][x]["reason"] + "\n"
+            glory += knight['history'][x]['glory']
 
         narration += "---------------------------------------------------------------------\n"
         narration += str(glory) + " glory total!"
