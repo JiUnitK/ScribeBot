@@ -34,7 +34,7 @@ personality_mirror = {
     "prudent": "reckless",
     "reckless": "prudent",
     "spiritual": "worldly",
-    "wordly": "spiritual",
+    "worldly": "spiritual",
     "temperate": "indulgent",
     "indulgent": "temperate",
     "trusting": "suspicious",
