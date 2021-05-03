@@ -52,6 +52,38 @@ skills = [
     "religion", "romance", "singing", "stewardship", "swimming", "tourney"
 ]
 
+def closestSkill(skill):
+    shortest_lev_distance = 1000
+    closest = ""
+    for x in personality_mirror:
+        lev_dist = utility.levenshteinDistance(skill, x)
+        if lev_dist < shortest_lev_distance:
+            closest = x
+            shortest_lev_distance = lev_dist
+    for x in statistics:
+        lev_dist = utility.levenshteinDistance(skill, x)
+        if lev_dist < shortest_lev_distance:
+            closest = x
+            shortest_lev_distance = lev_dist
+    for x in skills:
+        lev_dist = utility.levenshteinDistance(skill, x)
+        if lev_dist < shortest_lev_distance:
+            closest = x
+            shortest_lev_distance = lev_dist
+    return closest
+
+
+def closestPassion(passion, passion_list):
+    shortest_lev_distance = 1000
+    closest = ""
+    for x in passion_list:
+        lev_dist = utility.levenshteinDistance(passion, x)
+        if lev_dist < shortest_lev_distance:
+            closest = x
+            shortest_lev_distance = lev_dist
+    return closest
+
+
 # Startup Information
 @bot.event
 async def on_ready():
@@ -262,7 +294,7 @@ async def set_skill(ctx, skill, value):
             utility.save(data)
             await ctx.send("Sir " + name + " has " + str(value) + " " + skill)
         else:
-            await ctx.send(skill + " is not a valid trait, skill, or statistic")
+            await ctx.send(skill + " is not a valid trait, skill, or statistic. Did you mean " + '\'' + closestSkill(skill) + "\'?")
     else:
         await ctx.send("Thou must first claim a knight")
 
@@ -325,7 +357,7 @@ async def check(ctx, skill):
             utility.save(data)
             await ctx.send("Checked " + skill + " for Sir " + name)
         else:
-            await ctx.send("Sir " + name + " does not have " + skill)
+            await ctx.send("Sir " + name + " does not have " + skill + ". Did you mean " + '\'' + closestSkill(skill) + "\'?")
     else:
         await ctx.send("Thou must first claim a knight")
 
@@ -354,7 +386,7 @@ async def uncheck(ctx, skill):
             utility.save(data)
             await ctx.send("Unchecked " + skill + " for Sir " + name)
         else:
-            await ctx.send("Sir " + name + " does not have " + skill)
+            await ctx.send("Sir " + name + " does not have " + skill + ". Did you mean" + '\'' + closestSkill(skill) + "\'?")
     else:
         await ctx.send("Thou must first claim a knight")
 
@@ -455,7 +487,14 @@ async def skill(ctx, skill_name, *argv):
         elif skill_name in knight['skills']:
             await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['skills'][skill_name]['value'], *argv))
         else:
-            await ctx.send("Sir " + name + " does not have that skill, trait, or passion")
+            closest_passion = closestPassion(skill_name, knight['passions'])
+            closest_skill = closestSkill(skill_name)
+            message = ": Sir " + name + " does not have that skill, trait, or passion. Did you mean "
+            if utility.levenshteinDistance(closest_passion, skill_name) < utility.levenshteinDistance(closest_skill, skill_name):
+                message += '\'' + closest_passion + "\'?"
+            else:
+                message += '\'' + closest_skill + "\'?"
+            await ctx.send(ctx.author.display_name + message)
     else:
         await ctx.send("Thou must first claim a knight")
 
