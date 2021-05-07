@@ -500,7 +500,7 @@ async def skill(ctx, skill_name, *argv):
 
 @bot.command()
 async def scribe_roll(ctx, number):
-    random_number = random.randint(1, number)
+    random_number = random.randint(1, int(number))
     await ctx.send(str(random_number))
 
 
