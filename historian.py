@@ -498,6 +498,11 @@ async def skill(ctx, skill_name, *argv):
     else:
         await ctx.send("Thou must first claim a knight")
 
+@bot.command()
+async def scribe_roll(ctx, number):
+    random_number = random.randint(1, number)
+    await ctx.send(str(number))
+
 
 # Run the bot
 bot.run(TOKEN)
