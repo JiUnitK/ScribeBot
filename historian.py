@@ -498,10 +498,41 @@ async def skill(ctx, skill_name, *argv):
     else:
         await ctx.send("Thou must first claim a knight")
 
+
 @bot.command()
 async def scribe_roll(ctx, number):
     random_number = random.randint(1, int(number))
     await ctx.send(str(random_number))
+
+
+feast_deck = []
+
+@bot.command()
+async def shuffle(ctx):
+    # Create a list of numbers from 0 to the last card in the deck
+    NUM_CARDS = 155
+    card_list = [num for num in range(0, NUM_CARDS)]
+
+    # Randomly pick cards and push them onto the feast deck
+    while (card_list):
+        rand_idx = random.randint(0, len(card_list)-1)
+        feast_deck.append(card_list[rand_idx])
+        card_list.remove(card_list[rand_idx])
+
+    await ctx.send("Shuffled the feast deck")
+
+
+@bot.command()
+async def draw(ctx):
+    if feast_deck:
+        card = feast_deck.pop()
+        page = card // 9
+        index = card % 9
+
+        # Send page and index info as 1-indexed for non-programmers to understand
+        await ctx.send("Drew card " + str(card) + ": page " + str(page + 1) + ", index " + str(index + 1))
+    else:
+        await ctx.send("Deck is empty. Reshuffle and draw again")
 
 
 # Run the bot
