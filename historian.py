@@ -529,7 +529,7 @@ async def draw(ctx):
 
 
 @bot.command()
-async def scribe_roll(ctx, *argv):
+async def roll(ctx, *argv):
     # Take argument list and concatentate as a single string
     argument = ""
     for arg in argv:
