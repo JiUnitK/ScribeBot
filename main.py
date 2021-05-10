@@ -83,7 +83,7 @@ async def roll(ctx, *argv):
                     num_rolls = int(split[0])
 
                 for i in range(num_rolls):
-                    roll_val = random.randint(0, int(split[1]))
+                    roll_val = random.randint(1, int(split[1]))
                     rolls.append(roll_val)
                     total += roll_val
             else:
