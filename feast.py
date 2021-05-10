@@ -5,6 +5,10 @@ import random
 # List used as stack to track cards in feast deck
 feast_deck = []
 
+"""
+Name: shuffle
+Summary: Shuffles the feast deck. Any previously drawn cards are re-added to the deck.
+"""
 @commands.command()
 async def shuffle(ctx):
     # Create a list of numbers from 0 to the last card in the deck
@@ -20,6 +24,10 @@ async def shuffle(ctx):
     await ctx.send("Shuffled the feast deck")
 
 
+"""
+Name: draw
+Summary: Draws a card from the feast deck. The feast deck must not be empty and must have been shuffled at least once
+"""
 @commands.command()
 async def draw(ctx):
     if feast_deck:
@@ -33,7 +41,8 @@ async def draw(ctx):
         await ctx.send("Deck is empty. Reshuffle and draw again")
 
 
+# Allows this file's bot commands to be loaded in to a separate file
+# Every extension should have this function
 def setup(bot):
-    # Every extension should have this function
     bot.add_command(draw)
     bot.add_command(shuffle)

@@ -2,16 +2,29 @@ import os
 import json
 import random
 
+"""
+Name: load
+Summary: Loads annals.json
+"""
 def load():
     # Read in the JSON file as it currently exists
     with open('data/annals.json', "r") as json_file:
         data = json.load(json_file)
         return data
 
+
+"""
+Name: save
+Summary: Saves the provided json data to annals.json
+"""
 def save( data ):
     with open('data/annals.json', 'w') as json_file:
         json.dump(data, json_file)
 
+"""
+Name: roll
+Summary: Calculates a generic DC skill check. Any number of bonus modifiers may be provided
+"""
 def roll( skill_name, difficulty, *argv ):
     bonus_list = []
     for arg in argv:
@@ -43,7 +56,10 @@ def roll( skill_name, difficulty, *argv ):
     
     return output_str
 
-
+"""
+Name: levenshteinDistance
+Summary: Calculates the minimum number of single-character changes necessary to tranform string s1 to s2
+"""
 def levenshteinDistance(s1, s2):
     if len(s1) > len(s2):
         s1, s2 = s2, s1

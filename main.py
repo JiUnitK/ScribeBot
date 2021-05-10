@@ -34,6 +34,18 @@ async def on_ready():
             json.dump(data, json_file)
 
 
+"""
+Name: roll
+Summary: Performs a generic dice roll
+
+Note: Format follows any number of provided XdY, dY, or integer values
+
+Examples: !roll d20+5
+          !roll d20 + 5
+          !roll 3d12 + d5 + 5
+          !roll 3d6 + 1d6 - 3 + 4
+          !roll 3d6+1d6-3+4
+"""
 @bot.command()
 async def roll(ctx, *argv):
     # Take argument list and concatentate as a single string

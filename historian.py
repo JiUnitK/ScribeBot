@@ -3,6 +3,7 @@ from discord.ext import commands
 import json
 import utility
 
+# Dictionary of personality traits and their mirror traits
 personality_mirror = {
     "chaste": "lustful",
     "lustful": "chase",
@@ -31,16 +32,22 @@ personality_mirror = {
     "valorous": "cowardly"
 }
 
+# List of character statistics
 statistics = [
     "siz", "dex", "str", "con", "app"
 ]
 
+# List of character skills
 skills = [
     "battle", "siege", "horsemanship", "sword", "lance", "spear", "dagger", "awareness", "boating", "compose", "courtesy",
     "dancing", "faerie lore", "falconry", "fashion", "first aid", "flirting", "folklore", "gaming", "heraldry", "hunting", "intrigue", "orate", "play", "read", "recognize",
     "religion", "romance", "singing", "stewardship", "swimming", "tourney"
 ]
 
+"""
+Name: closestSkill
+Summary: Returns the name of the personality trait, skill, or statistic that most closely matches the input string 'skill'
+"""
 def closestSkill(skill):
     shortest_lev_distance = 1000
     closest = ""
@@ -62,6 +69,10 @@ def closestSkill(skill):
     return closest
 
 
+"""
+Name: closestPassion
+Summary: Returns the name of the passion that most closely matches the input string 'skill'
+"""
 def closestPassion(passion, passion_list):
     shortest_lev_distance = 1000
     closest = ""
@@ -73,6 +84,10 @@ def closestPassion(passion, passion_list):
     return closest
 
 
+"""
+Name: claim
+Summary: Allows a Discord user to specify which knight character to modify or use for rolls
+"""
 @commands.command()
 async def claim(ctx, name):
     data = utility.load()
@@ -88,6 +103,10 @@ async def claim(ctx, name):
         await ctx.send("I know not this Ser " + name)
 
 
+"""
+Name: unclaim
+Summary: Allows a Discord user to release control of a knight character
+"""
 @commands.command()
 async def unclaim(ctx):
     data = utility.load()
@@ -100,6 +119,10 @@ async def unclaim(ctx):
         await ctx.send("Thou has not claimed a knight")
 
 
+"""
+Name: knight
+Summary: Creates a new knight character with the given 'name'
+"""
 @commands.command()
 async def knight(ctx, name):
     data = utility.load()
@@ -117,11 +140,15 @@ async def knight(ctx, name):
         await ctx.send("Thus marks the chapter of Sir " + name + " in the annals of history")
 
 
+"""
+Name: claim
+Summary: Adds a new entry to a knight's history with a particular glory value and summary of the event
+
+Note: From user perspective, first name should be name, then amount of glory, and then the last element should be event name.
+      argv is used because users sometimes add extra characters they shouldn't
+"""
 @commands.command()
 async def glorify(ctx, *argv):
-    # From user perspective, first name should be name, then amount of glory, and then the last element should be event name
-    # argv is used because users sometimes add extra characters they shouldn't
-
     # Parse the argument list
     arg_list = []
     for arg in argv:
@@ -141,6 +168,12 @@ async def glorify(ctx, *argv):
         await ctx.send("I could not find that name. Use !knight to add a new knight or check thine spelling")
     
 
+"""
+Name: summarize
+Summary: Sums up the glory score of a given knight.
+
+Note: If no name is provided, the summary is of the user's currently claimed knight.
+"""
 @commands.command()
 async def summarize(ctx, *argv):
     # Parse the argument list
@@ -171,7 +204,12 @@ async def summarize(ctx, *argv):
         await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
 
 
+"""
+Name: narrate
+Summary: Prints full history of a given knight and a glory score sum
 
+Note: If no name is provided, the summary is of the user's currently claimed knight.
+"""
 @commands.command()
 async def narrate(ctx, *argv):
     # Parse the argument list
@@ -209,6 +247,11 @@ async def narrate(ctx, *argv):
         await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
 
 
+"""
+Name: set_skill
+Summary: Sets a skill, personality trait, or statistic to a target value for the currently claimed knight. 
+         For personality trait, the opposing trait is reducing so that that sum of the trait with its mirror trait is 20
+"""
 @commands.command()
 async def set_skill(ctx, skill, value):
     data = utility.load()
@@ -245,6 +288,10 @@ async def set_skill(ctx, skill, value):
         await ctx.send("Thou must first claim a knight")
 
 
+"""
+Name: set_passion
+Summary: Sets a passion for the currently claimed knight to the target value. If the passion does not already exist, a new passion is created.
+"""
 @commands.command()
 async def set_passion(ctx, passion, value):
     data = utility.load()
@@ -262,6 +309,10 @@ async def set_passion(ctx, passion, value):
         await ctx.send("Thou must first claim a knight")
 
 
+"""
+Name: remove_passion
+Summary: Removes a passion from the list of passions for the currently claimed knight
+"""
 @commands.command()
 async def remove_passion(ctx, passion):
     data = utility.load()
@@ -279,6 +330,10 @@ async def remove_passion(ctx, passion):
         await ctx.send("Thou must first claim a knight")
 
 
+"""
+Name: check
+Summary: Adds a check to the named skill, personality trait, stat, or passion for the currently claimed knight
+"""
 @commands.command()
 async def check(ctx, skill):
     data = utility.load()
@@ -308,6 +363,10 @@ async def check(ctx, skill):
         await ctx.send("Thou must first claim a knight")
 
 
+"""
+Name: uncheck
+Summary: Removes a check to the named skill, personality trait, stat, or passion for the currently claimed knight
+"""
 @commands.command()
 async def uncheck(ctx, skill):
     data = utility.load()
@@ -337,6 +396,11 @@ async def uncheck(ctx, skill):
         await ctx.send("Thou must first claim a knight")
 
 
+"""
+Name: describe
+Summary: Prints a character sheet of traits, skills, stats, and passions for the currently claimed knight or a target knight if
+         a name is provided.
+"""
 @commands.command()
 async def describe(ctx, *argv):
     # Parse the argument list
@@ -412,11 +476,23 @@ async def describe(ctx, *argv):
         await ctx.send(narration)
 
 
+"""
+Name: gm_skill
+Summary: Performs a generic skill roll
+
+Note: The parameters are a string name for the skill, the DC value, and any number of bonuses
+"""
 @commands.command()
 async def gm_skill(ctx, skill_name, difficulty, *argv):
     await ctx.send(ctx.author.display_name + utility.roll(skill_name, difficulty, *argv))
 
 
+"""
+Name: skill
+Summary: Performs a skill roll for the currently claimed knight using its character sheet values
+
+Note: The parameters are a string name for the skill and any number of bonuses
+"""
 @commands.command()
 async def skill(ctx, skill_name, *argv):
     data = utility.load()
@@ -445,8 +521,9 @@ async def skill(ctx, skill_name, *argv):
         await ctx.send("Thou must first claim a knight")
 
 
+# Allows this file's bot commands to be loaded in to a separate file
+# Every extension should have this function
 def setup(bot):
-    # Every extension should have this function
     bot.add_command(claim)
     bot.add_command(unclaim)
     bot.add_command(knight)
