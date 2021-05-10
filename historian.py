@@ -1,18 +1,7 @@
-import os
 import discord
 from discord.ext import commands
-from dotenv import load_dotenv
-import random
 import json
-
 import utility
-
-# Load the bot token from the .env file in this directory
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-
-# Create bot
-bot = commands.Bot(command_prefix='!')
 
 personality_mirror = {
     "chaste": "lustful",
@@ -84,50 +73,7 @@ def closestPassion(passion, passion_list):
     return closest
 
 
-# Startup Information
-@bot.event
-async def on_ready():
-    print('Connected to bot: {}'.format(bot.user.name))
-    print('Bot ID: {}'.format(bot.user.id))
-
-    # Create a new annals file if it doesn't exist
-    if not os.path.isfile('data/annals.json'):
-        with open('data/annals.json', 'w') as json_file:
-            data = {}
-            data['claims'] = {}
-            data['knights'] = {}
-            json.dump(data, json_file)
-
-
-@bot.command()
-async def swoon(ctx):
-    players = ["Sir Pant", "Sir Griffyth", "Sir Percival", "Sir Bylandt"]
-    random_compliments = [
-        "{player} is so handsome!",
-        "Look at {player}'s massive arms!",
-        "{player} is more imposing than the rumors say...",
-        "Mayhap if I were so fortunate, I would lock eyes with {player}.",
-        "Make way for {player}!"
-    ]
-
-    random_player = players[random.randint(0, len(players) - 1)]
-    random_compliment = random_compliments[random.randint(0, len(random_compliments) - 1)]
-
-    await ctx.send(random_compliment.format(player=random_player))
-
-
-@bot.command()
-async def insult(ctx, name):
-    random_shame = [
-        "Thou callest that a glory score Ser {player}? How pitiable!",
-        "Lo! Doth the earth quake? Or is Ser {player}'s mother taking a walk?",
-        "Speaking of Ser {player}, doth knowest what they say about those with low glory?"
-    ]
-    random_insult = random_shame[random.randint(0, len(random_shame) - 1)]
-    await ctx.send(random_insult.format(player=name))
-
-
-@bot.command()
+@commands.command()
 async def claim(ctx, name):
     data = utility.load()
 
@@ -142,7 +88,7 @@ async def claim(ctx, name):
         await ctx.send("I know not this Ser " + name)
 
 
-@bot.command()
+@commands.command()
 async def unclaim(ctx):
     data = utility.load()
 
@@ -154,7 +100,7 @@ async def unclaim(ctx):
         await ctx.send("Thou has not claimed a knight")
 
 
-@bot.command()
+@commands.command()
 async def knight(ctx, name):
     data = utility.load()
     
@@ -171,7 +117,7 @@ async def knight(ctx, name):
         await ctx.send("Thus marks the chapter of Sir " + name + " in the annals of history")
 
 
-@bot.command()
+@commands.command()
 async def glorify(ctx, *argv):
     # From user perspective, first name should be name, then amount of glory, and then the last element should be event name
     # argv is used because users sometimes add extra characters they shouldn't
@@ -195,7 +141,7 @@ async def glorify(ctx, *argv):
         await ctx.send("I could not find that name. Use !knight to add a new knight or check thine spelling")
     
 
-@bot.command()
+@commands.command()
 async def summarize(ctx, *argv):
     # Parse the argument list
     arg_list = []
@@ -226,7 +172,7 @@ async def summarize(ctx, *argv):
 
 
 
-@bot.command()
+@commands.command()
 async def narrate(ctx, *argv):
     # Parse the argument list
     arg_list = []
@@ -263,7 +209,7 @@ async def narrate(ctx, *argv):
         await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
 
 
-@bot.command()
+@commands.command()
 async def set_skill(ctx, skill, value):
     data = utility.load()
     if ctx.author.name in data['claims']:
@@ -299,7 +245,7 @@ async def set_skill(ctx, skill, value):
         await ctx.send("Thou must first claim a knight")
 
 
-@bot.command()
+@commands.command()
 async def set_passion(ctx, passion, value):
     data = utility.load()
     if ctx.author.name in data['claims']:
@@ -316,7 +262,7 @@ async def set_passion(ctx, passion, value):
         await ctx.send("Thou must first claim a knight")
 
 
-@bot.command()
+@commands.command()
 async def remove_passion(ctx, passion):
     data = utility.load()
     if ctx.author.name in data['claims']:
@@ -333,7 +279,7 @@ async def remove_passion(ctx, passion):
         await ctx.send("Thou must first claim a knight")
 
 
-@bot.command()
+@commands.command()
 async def check(ctx, skill):
     data = utility.load()
     if ctx.author.name in data['claims']:
@@ -362,7 +308,7 @@ async def check(ctx, skill):
         await ctx.send("Thou must first claim a knight")
 
 
-@bot.command()
+@commands.command()
 async def uncheck(ctx, skill):
     data = utility.load()
     if ctx.author.name in data['claims']:
@@ -391,7 +337,7 @@ async def uncheck(ctx, skill):
         await ctx.send("Thou must first claim a knight")
 
 
-@bot.command()
+@commands.command()
 async def describe(ctx, *argv):
     # Parse the argument list
     arg_list = []
@@ -466,12 +412,12 @@ async def describe(ctx, *argv):
         await ctx.send(narration)
 
 
-@bot.command()
+@commands.command()
 async def gm_skill(ctx, skill_name, difficulty, *argv):
     await ctx.send(ctx.author.display_name + utility.roll(skill_name, difficulty, *argv))
 
 
-@bot.command()
+@commands.command()
 async def skill(ctx, skill_name, *argv):
     data = utility.load()
     if ctx.author.name in data['claims']:
@@ -498,92 +444,20 @@ async def skill(ctx, skill_name, *argv):
     else:
         await ctx.send("Thou must first claim a knight")
 
-feast_deck = []
 
-@bot.command()
-async def shuffle(ctx):
-    # Create a list of numbers from 0 to the last card in the deck
-    NUM_CARDS = 155
-    card_list = [num for num in range(0, NUM_CARDS)]
-
-    # Randomly pick cards and push them onto the feast deck
-    while (card_list):
-        rand_idx = random.randint(0, len(card_list)-1)
-        feast_deck.append(card_list[rand_idx])
-        card_list.remove(card_list[rand_idx])
-
-    await ctx.send("Shuffled the feast deck")
-
-
-@bot.command()
-async def draw(ctx):
-    if feast_deck:
-        card = feast_deck.pop()
-        page = card // 9
-        index = card % 9
-
-        # Send page and index info as 1-indexed for non-programmers to understand
-        await ctx.send("Drew card " + str(card) + ": page " + str(page + 1) + ", index " + str(index + 1))
-    else:
-        await ctx.send("Deck is empty. Reshuffle and draw again")
-
-
-@bot.command()
-async def roll(ctx, *argv):
-    # Take argument list and concatentate as a single string
-    argument = ""
-    for arg in argv:
-        argument += arg
-
-    # Split at all '+' and then split at all '-'
-    plus_split = argument.split('+')
-    arg_list = []
-    for i in plus_split:
-        temp = i.split('-')
-        if len(temp) > 1:
-            arg_list.append(temp[0])
-            for k in temp[1:]:
-                arg_list.append(str(0 - int(k)))
-        else:
-            arg_list.append(temp[0])
-
-    rolls = []
-    bonus = 0
-    total = 0
-
-    # Parse each argument and roll dice
-    for it in arg_list:
-        try:
-            # Straight conversions to integer mean the argument is a bonus
-            bonus += int(it)
-        except ValueError:
-            split = it.split('d')
-            if (len(split) == 2):
-                # Compute the roll
-                num_rolls = 1
-                if split[0]:
-                    num_rolls = int(split[0])
-
-                for i in range(num_rolls):
-                    roll_val = random.randint(0, int(split[1]))
-                    rolls.append(roll_val)
-                    total += roll_val
-            else:
-                await ctx.send("I could not understand that roll")
-                return
-
-    message = ctx.author.name + " Roll: " + str(total + bonus) + "\n     rolls: ["
-    for i in rolls[:-1]:
-        message += str(i) + ", "
-    if rolls:
-        message += str(rolls[-1])
-    message += "] "
-
-    if bonus != 0:
-        message += "bonus " + str(bonus)
-
-    await ctx.send(message)
-
-
-# Run the bot
-bot.run(TOKEN)
+def setup(bot):
+    # Every extension should have this function
+    bot.add_command(claim)
+    bot.add_command(unclaim)
+    bot.add_command(knight)
+    bot.add_command(glorify)
+    bot.add_command(summarize)
+    bot.add_command(narrate)
+    bot.add_command(set_skill)
+    bot.add_command(set_passion)
+    bot.add_command(remove_passion)
+    bot.add_command(check)
+    bot.add_command(uncheck)
+    bot.add_command(describe)
+    bot.add_command(gm_skill)
+    bot.add_command(skill)
