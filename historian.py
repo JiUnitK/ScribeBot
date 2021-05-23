@@ -237,7 +237,7 @@ async def narrate(ctx, *argv):
         knight = data['knights'][name]
         for x in range(len(knight['history'])):
             # Only print the last 10 items due to discord bot post character limit of 2000 characters
-            if (x < len(knight['history']) - 10):
+            if (x > len(knight['history']) - 20):
                 narration += str(knight['history'][x]['glory']) + " glory for " + knight['history'][x]["reason"] + "\n"
             glory += knight['history'][x]['glory']
 
