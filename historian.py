@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 import json
 import utility
+import random
+import re
 
 # Dictionary of personality traits and their mirror traits
 personality_mirror = {
@@ -490,37 +492,98 @@ async def gm_skill(ctx, skill_name, difficulty, *argv):
 
 
 """
-Name: skill
-Summary: Performs a skill roll for the currently claimed knight using its character sheet values
+Name: roll
+Summary: Performs a generic dice roll
 
-Note: The parameters are a string name for the skill and any number of bonuses
+Note: Format follows any number of provided XdY, dY, or integer values
+
+Examples: !roll d20+5
+          !roll d20 + 5
+          !roll 3d12 + d5 + 5
+          !roll 3d6 + 1d6 - 3 + 4
+          !roll 3d6+1d6-3+4
 """
 @commands.command()
-async def skill(ctx, skill_name, *argv):
+async def roll(ctx, *argv):
+    # Take argument list and concatentate as a single string
+    argument = ""
+    for arg in argv:
+        argument += arg
+
+    # Split at all '+' and then split at all '-'
+    plus_split = argument.split('+')
+    arg_list = []
+    for i in plus_split:
+        temp = i.split('-')
+        if len(temp) > 1:
+            arg_list.append(temp[0])
+            for k in temp[1:]:
+                arg_list.append(str(0 - int(k)))
+        else:
+            arg_list.append(temp[0])
+
+    rolls = []
+    bonus = 0
+    total = 0
+    message = ""
+
+    # Load the knight claimed by the user, if any exists
     data = utility.load()
     if ctx.author.name in data['claims']:
         name = data['claims'][ctx.author.name]
         knight = data['knights'][name]
-        
+
+        # If the first argument matches the name of a skill, trait, etc. roll for that trait
+        skill_name = argv[0]
         if skill_name in knight['personality']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['personality'][skill_name]['value'], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['personality'][skill_name]['value'], *argv[1:]))
+            return
         elif skill_name in knight['passions']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['passions'][skill_name]['value'], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['passions'][skill_name]['value'], *argv[1:]))
+            return
         elif skill_name in knight['statistics']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['statistics'][skill_name]['value'], *argv))
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['statistics'][skill_name]['value'], *argv[1:]))
+            return
         elif skill_name in knight['skills']:
-            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['skills'][skill_name]['value'], *argv))
-        else:
-            closest_passion = closestPassion(skill_name, knight['passions'])
-            closest_skill = closestSkill(skill_name)
-            message = ": Sir " + name + " does not have that skill, trait, or passion. Did you mean "
-            if utility.levenshteinDistance(closest_passion, skill_name) < utility.levenshteinDistance(closest_skill, skill_name):
-                message += '\'' + closest_passion + "\'?"
+            await ctx.send(ctx.author.display_name + utility.roll(skill_name, knight['skills'][skill_name]['value'], *argv[1:]))
+            return
+    
+    # This is a generic roll. Parse each argument and roll dice
+    for it in arg_list:
+        try:
+            # Straight conversions to integer mean the argument is a bonus
+            bonus += int(it)
+        except ValueError:
+            # Check for rolls like d20 or 2d20
+            match_obj1 = re.match(r"\d[d]\d", it)
+            match_obj2 = re.match(r"[d]\d", it)
+            if match_obj1:
+                split = it.split('d')
+                num_rolls = int(split[0])
+                for i in range(num_rolls):
+                    roll_val = random.randint(1, int(split[1]))
+                    rolls.append(roll_val)
+                    total += roll_val
+            elif match_obj2:
+                roll_val = random.randint(1, int(it[1:]))
+                rolls.append(roll_val)
+                total += roll_val
             else:
-                message += '\'' + closest_skill + "\'?"
-            await ctx.send(ctx.author.display_name + message)
-    else:
-        await ctx.send("Thou must first claim a knight")
+                await ctx.send("Skills with spaces should be enclosed with parentheses and claim a knight if you haven't.")
+                return
+
+    # Format the roll result
+    message = ctx.author.name + " Roll: " + str(total + bonus) + "\n     rolls: ["
+    for i in rolls[:-1]:
+        message += str(i) + ", "
+    if rolls:
+        message += str(rolls[-1])
+    message += "] "
+
+    if bonus != 0:
+        message += "bonus " + str(bonus)
+
+    await ctx.send(message)
 
 
 # Allows this file's bot commands to be loaded in to a separate file
@@ -539,4 +602,4 @@ def setup(bot):
     bot.add_command(uncheck)
     bot.add_command(describe)
     bot.add_command(gm_skill)
-    bot.add_command(skill)
+    bot.add_command(roll)
