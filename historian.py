@@ -486,13 +486,13 @@ async def describe(ctx, *argv):
 
 
 """
-Name: gm_skill
+Name: gm_roll
 Summary: Performs a generic skill roll
 
 Note: The parameters are a string name for the skill, the DC value, and any number of bonuses
 """
 @commands.command()
-async def gm_skill(ctx, skill_name, difficulty, *argv):
+async def gm_roll(ctx, skill_name, difficulty, *argv):
     await ctx.send(ctx.author.display_name + utility.roll(skill_name, difficulty, *argv))
 
 
@@ -612,5 +612,5 @@ def setup(bot):
     bot.add_command(check)
     bot.add_command(uncheck)
     bot.add_command(describe)
-    bot.add_command(gm_skill)
+    bot.add_command(gm_roll)
     bot.add_command(roll)
