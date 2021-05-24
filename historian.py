@@ -99,10 +99,10 @@ async def claim(ctx, name):
             await ctx.send("Thou hath already claimed Sir " + data['claims'][ctx.author.name])
         else:
             data['claims'][ctx.author.name] = name
-            await ctx.send(ctx.author.name + " has claimed Ser " + name)
+            await ctx.send(ctx.author.name + " has claimed Sir " + name)
             utility.save(data)
     else:
-        await ctx.send("I know not this Ser " + name)
+        await ctx.send("I know not this Sir " + name)
 
 
 """
@@ -114,7 +114,7 @@ async def unclaim(ctx):
     data = utility.load()
 
     if ctx.author.name in data['claims']:
-        await ctx.send(ctx.author.name + " hath unclaimed Ser " + data['claims'][ctx.author.name])
+        await ctx.send(ctx.author.name + " hath unclaimed Sir " + data['claims'][ctx.author.name])
         del data['claims'][ctx.author.name]
         utility.save(data)
     else:
@@ -252,12 +252,12 @@ async def narrate(ctx, *argv):
 
 
 """
-Name: set_skill
-Summary: Sets a skill, personality trait, or statistic to a target value for the currently claimed knight. 
+Name: set
+Summary: Sets a skill, personality trait, passion, or statistic to a target value for the currently claimed knight. 
          For personality trait, the opposing trait is reducing so that that sum of the trait with its mirror trait is 20
 """
 @commands.command()
-async def set_skill(ctx, skill, value):
+async def set(ctx, skill, value):
     data = utility.load()
     if ctx.author.name in data['claims']:
         name = data['claims'][ctx.author.name]
@@ -286,27 +286,32 @@ async def set_skill(ctx, skill, value):
             knight['statistics'][skill]['value'] = int(value)
             utility.save(data)
             await ctx.send("Sir " + name + " has " + str(value) + " " + skill)
+        elif skill in knight['passions']:
+            knight['passions'][skill]['value'] = int(value)
+            utility.save(data)
+            await ctx.send("Sir " + name + " has " + str(value) + " " + skill)
         else:
-            await ctx.send(skill + " is not a valid trait, skill, or statistic. Did you mean " + '\'' + closestSkill(skill) + "\'?")
+            await ctx.send(skill + " is not a valid trait, skill, passion, or statistic. Did you mean " + '\'' + closestSkill(skill) + "\'?")
     else:
         await ctx.send("Thou must first claim a knight")
 
 
 """
-Name: set_passion
+Name: add_passion
 Summary: Sets a passion for the currently claimed knight to the target value. If the passion does not already exist, a new passion is created.
 """
 @commands.command()
-async def set_passion(ctx, passion, value):
+async def add_passion(ctx, passion, value):
     data = utility.load()
     if ctx.author.name in data['claims']:
         name = data['claims'][ctx.author.name]
         knight = data['knights'][name]
 
         if not passion in knight['passions']:
-            knight['passions'][passion] = {'check': False, 'value': 10}
+            knight['passions'][passion] = {'check': False, 'value': int(value)}
+        else:
+            knight['passions'][passion]['value'] = int(value)
 
-        knight['passions'][passion]['value'] = int(value)
         utility.save(data)
         await ctx.send("Sir " + name + " has " + str(value) + " " + passion)
     else:
@@ -493,15 +498,21 @@ async def gm_skill(ctx, skill_name, difficulty, *argv):
 
 """
 Name: roll
-Summary: Performs a generic dice roll
+Summary: Performs a generic dice roll. Otherwise, performs a specific skill check.
 
-Note: Format follows any number of provided XdY, dY, or integer values
+Note: Format for generic roll follows any number of provided XdY, dY, or integer values
 
 Examples: !roll d20+5
           !roll d20 + 5
           !roll 3d12 + d5 + 5
           !roll 3d6 + 1d6 - 3 + 4
           !roll 3d6+1d6-3+4
+
+Note: Format for skill command is the skill name followed by any number of bonuses
+
+Examples: !roll awareness 20
+          !roll chaste
+          !roll hunting -2
 """
 @commands.command()
 async def roll(ctx, *argv):
@@ -595,8 +606,8 @@ def setup(bot):
     bot.add_command(glorify)
     bot.add_command(summarize)
     bot.add_command(narrate)
-    bot.add_command(set_skill)
-    bot.add_command(set_passion)
+    bot.add_command(set)
+    bot.add_command(add_passion)
     bot.add_command(remove_passion)
     bot.add_command(check)
     bot.add_command(uncheck)
