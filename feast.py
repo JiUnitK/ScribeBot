@@ -12,8 +12,8 @@ Summary: Shuffles the feast deck. Any previously drawn cards are re-added to the
 @commands.command()
 async def shuffle(ctx):
     # Create a list of numbers from 0 to the last card in the deck
-    NUM_CARDS = 155
-    card_list = [num for num in range(0, NUM_CARDS)]
+    NUM_CARDS = 154
+    card_list = [num for num in range(1, NUM_CARDS+1)]
 
     # Randomly pick cards and push them onto the feast deck
     while (card_list):
@@ -32,11 +32,8 @@ Summary: Draws a card from the feast deck. The feast deck must not be empty and 
 async def draw(ctx):
     if feast_deck:
         card = feast_deck.pop()
-        page = card // 9
-        index = card % 9
-
-        # Send page and index info as 1-indexed for non-programmers to understand
-        await ctx.send("Drew card " + str(card) + ": page " + str(page + 1) + ", index " + str(index + 1))
+        card_name = "feast_cards/slice" + str(card) + ".png"
+        await ctx.send(file=discord.File(card_name))
     else:
         await ctx.send("Deck is empty. Reshuffle and draw again")
 
