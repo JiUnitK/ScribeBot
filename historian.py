@@ -133,11 +133,81 @@ async def knight(ctx, name):
         await ctx.send("Sir " + name + " is already in the annals of history")
     else:
         data['knights'][name] = {}
-        data['knights'][name]['personality'] = {}
-        data['knights'][name]['passions'] = {}
-        data['knights'][name]['statistics'] = {}
-        data['knights'][name]['skills'] = {}
+        data['knights'][name]['personality'] = {
+            'chaste': {'check': False, 'value': 10},
+            'lustful': {'check': False, 'value': 10},
+            'energetic': {'check': False, 'value': 10},
+            'lazy': {'check': False, 'value': 10},
+            'forgiving': {'check': False, 'value': 10},
+            'vengeful': {'check': False, 'value': 10},
+            'generous': {'check': False, 'value': 10},
+            'selfish': {'check': False, 'value': 10},
+            'honest': {'check': False, 'value': 10},
+            'deceitful': {'check': False, 'value': 10},
+            'just': {'check': False, 'value': 10},
+            'arbitrary': {'check': False, 'value': 10},
+            'merciful': {'check': False, 'value': 10},
+            'cruel': {'check': False, 'value': 10},
+            'modest': {'check': False, 'value': 10},
+            'proud': {'check': False, 'value': 10},
+            'prudent': {'check': False, 'value': 10},
+            'reckless': {'check': False, 'value': 10},
+            'spiritual': {'check': False, 'value': 10},
+            'worldly': {'check': False, 'value': 10},
+            'temperate': {'check': False, 'value': 10},
+            'indulgent': {'check': False, 'value': 10},
+            'trusting': {'check': False, 'value': 10},
+            'suspicious': {'check': False, 'value': 10},
+            'valorous': {'check': False, 'value': 10},
+            'cowardly': {'check': False, 'value': 10},
+        }
+        data['knights'][name]['passions'] = {
+            'fealty(lord)': {'check': False, 'value': 15},
+            'love(family)': {'check': False, 'value': 15},
+            'hospitality': {'check': False, 'value': 15},
+            'honor': {'check': False, 'value': 15}
+        }
+        data['knights'][name]['statistics'] = {
+            'siz': {'check': False, 'value': 10},
+            'dex': {'check': False, 'value': 10},
+            'str': {'check': False, 'value': 10},
+            'con': {'check': False, 'value': 10},
+            'app': {'check': False, 'value': 10}
+        }
+        data['knights'][name]['skills'] = {
+            "battle": {'check': False, 'value': 10},
+            "horsemanship": {'check': False, 'value': 10},
+            "sword": {'check': False, 'value': 10},
+            "lance": {'check': False, 'value': 10},
+            "spear": {'check': False, 'value': 6},
+            "dagger": {'check': False, 'value': 5},
+            "awareness": {'check': False, 'value': 5},
+            "boating": {'check': False, 'value': 1},
+            "compose": {'check': False, 'value': 1},
+            "courtesy": {'check': False, 'value': 3},
+            "dancing": {'check': False, 'value': 2},
+            "faerie lore": {'check': False, 'value': 1},
+            "falconry": {'check': False, 'value': 3},
+            "first aid": {'check': False, 'value': 10},
+            "flirting": {'check': False, 'value': 3},
+            "folklore": {'check': False, 'value': 2},
+            "gaming": {'check': False, 'value': 3},
+            "heraldry": {'check': False, 'value': 3},
+            "hunting": {'check': False, 'value': 2},
+            "intrigue": {'check': False, 'value': 3},
+            "orate": {'check': False, 'value': 3},
+            "play": {'check': False, 'value': 3},
+            "read": {'check': False, 'value': 0},
+            "recognize": {'check': False, 'value': 3},
+            "religion": {'check': False, 'value': 2},
+            "romance": {'check': False, 'value': 2},
+            "singing": {'check': False, 'value': 2},
+            "stewardship": {'check': False, 'value': 2},
+            "swimming": {'check': False, 'value': 2},
+            "tourney": {'check': False, 'value': 2},
+        }
         data['knights'][name]['history'] = []
+        data['knights'][name]['notes'] = {}
         utility.save(data)
         await ctx.send("Thus marks the chapter of Sir " + name + " in the annals of history")
 
@@ -317,6 +387,82 @@ async def add_passion(ctx, passion, value):
     else:
         await ctx.send("Thou must first claim a knight")
 
+"""
+Name: note
+Summary: Sets a note for the currently claimed knight.
+"""
+@commands.command()
+async def note(ctx, note, value):
+    data = utility.load()
+    if ctx.author.name in data['claims']:
+        name = data['claims'][ctx.author.name]
+        knight = data['knights'][name]
+        if not note in knight['notes']:
+            knight['notes'][note] = str(value)
+        else:
+            knight['notes'][note] = str(value)
+
+        utility.save(data)
+        await ctx.send("Note added for Sir " + name + " - " + str(note) + ": " + str(value))
+    else:
+        await ctx.send("Thou must first claim a knight")
+
+"""
+Name: remove_note
+Summary: Removes a note from the list of notes for the currently claimed knight
+"""
+@commands.command()
+async def remove_note(ctx, note):
+    data = utility.load()
+    if ctx.author.name in data['claims']:
+        name = data['claims'][ctx.author.name]
+        knight = data['knights'][name]
+
+        if note in knight['notes']:
+            knight['notes'].pop(note)
+            utility.save(data)
+            await ctx.send("Removed note " + str(note) + " from Sir " + name)
+        else:
+            ctx.send("Sir " + name + " does not have that note")
+    else:
+        await ctx.send("Thou must first claim a knight")
+
+"""
+Name: read_notes
+Summary: Reads out the notes for the currently claimed knight or a specified knight
+"""
+@commands.command()
+async def read_notes(ctx, *argv):
+    # Parse the argument list
+    arg_list = []
+    for arg in argv:
+        arg_list += [arg]
+
+    data = utility.load()
+
+    knight = {}
+    name = ""
+    if len(argv) > 0:
+        name = arg_list[0]
+        if name in data['knights']:
+            knight = data['knights'][name]
+        else:
+            await ctx.send("The annals of history do not contain the names of every lowborn peasant to walk the earth")
+            return
+    else:
+        if ctx.author.name in data['claims']:
+            name = data['claims'][ctx.author.name]
+            knight = data['knights'][name]
+        else:
+            await ctx.send("Claim a knight or specify the knight you wish to know")
+            return
+
+    if knight:
+        narration = "                                  Sir " + name + "'s Notes:\n"
+        narration += "---------------------------------------------------------------------\n"
+        for key in knight['notes']:
+            narration += str(key) + ": " + str(knight['notes'][key]) + "\n"
+        await ctx.send(narration)
 
 """
 Name: remove_passion
@@ -472,6 +618,20 @@ async def describe(ctx, *argv):
             else:
                 narration += '[ ] '
             narration += str(key) + ": " + str(knight['statistics'][key]['value']) + "\n"
+        
+        narration += "---------------------------------------------------------------------\n"
+        narration += "                                          Derived Stats:" + "\n"
+        siz = knight['statistics']['siz']['value']
+        dex = knight['statistics']['dex']['value']
+        strength = knight['statistics']['str']['value']
+        con = knight['statistics']['con']['value']
+        app = knight['statistics']['app']['value']
+
+        narration += "Damage: " + str(round((strength + siz) / 6)) + "d6\n"
+        narration += "Healing rate: " + str(round((strength + con) / 10)) + "\n"
+        narration += "Move rate: " + str(round((strength + dex) / 10)) + "\n"
+        narration += "Total hit points: " + str(siz + con) + "\n"
+        narration += "Unconscious: " + str(round((siz + con) / 4))  + "\n"
 
         narration += "---------------------------------------------------------------------\n"
         narration += "                                            Skills:" + "\n"
@@ -481,7 +641,6 @@ async def describe(ctx, *argv):
             else:
                 narration += '[ ] '
             narration += str(key) + ": " + str(knight['skills'][key]['value']) + "\n"
-
         await ctx.send(narration)
 
 
@@ -607,6 +766,9 @@ def setup(bot):
     bot.add_command(summarize)
     bot.add_command(narrate)
     bot.add_command(set)
+    bot.add_command(note)
+    bot.add_command(remove_note)
+    bot.add_command(read_notes)
     bot.add_command(add_passion)
     bot.add_command(remove_passion)
     bot.add_command(check)
