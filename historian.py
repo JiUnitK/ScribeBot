@@ -641,7 +641,22 @@ async def describe(ctx, *argv):
             else:
                 narration += '[ ] '
             narration += str(key) + ": " + str(knight['skills'][key]['value']) + "\n"
-        await ctx.send(narration)
+        
+        # Discord messages have a limit of 2000 characters. Print up to 2000 at a time
+        i = 0
+        DISCORD_MSG_MAX = 2000
+        while i < len(narration):
+            end_of_chunk = i+DISCORD_MSG_MAX
+            if len(narration) > i+DISCORD_MSG_MAX:
+                # Look for previous \n to break on
+                while narration[end_of_chunk] != '\n':
+                    end_of_chunk -= 1
+                
+                await ctx.send(narration[i:end_of_chunk])
+            else:
+                await(ctx.send(narration[i:len(narration)]))
+
+            i += end_of_chunk
 
 
 """
