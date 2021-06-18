@@ -4,6 +4,7 @@ import json
 import utility
 import random
 import re
+import decimal
 
 # Dictionary of personality traits and their mirror traits
 personality_mirror = {
@@ -627,11 +628,12 @@ async def describe(ctx, *argv):
         con = knight['statistics']['con']['value']
         app = knight['statistics']['app']['value']
 
-        narration += "Damage: " + str(round((strength + siz) / 6)) + "d6\n"
-        narration += "Healing rate: " + str(round((strength + con) / 10)) + "\n"
-        narration += "Move rate: " + str(round((strength + dex) / 10)) + "\n"
+        # Round with 0.5 values always rounding up
+        narration += "Damage: " + str(decimal.Decimal((strength + siz) / 6).to_integral_value(rounding=decimal.ROUND_HALF_UP)) + "d6\n"
+        narration += "Healing rate: " + str(decimal.Decimal((strength + con) / 10).to_integral_value(rounding=decimal.ROUND_HALF_UP)) + "\n"
+        narration += "Move rate: " + str(decimal.Decimal((strength + dex) / 10).to_integral_value(rounding=decimal.ROUND_HALF_UP)) + "\n"
         narration += "Total hit points: " + str(siz + con) + "\n"
-        narration += "Unconscious: " + str(round((siz + con) / 4))  + "\n"
+        narration += "Unconscious: " + str(decimal.Decimal((siz + con) / 4).to_integral_value(rounding=decimal.ROUND_HALF_UP))  + "\n"
 
         narration += "---------------------------------------------------------------------\n"
         narration += "                                            Skills:" + "\n"
